@@ -21,6 +21,7 @@ ESP8266WiFiMulti wifiMulti;
 
 #include <Arduino.h>
 #include "MHZ19.h"
+#include <SoftwareSerial.h>
 
 #include "secrets.h"
 
@@ -32,17 +33,18 @@ ESP8266WiFiMulti wifiMulti;
 //  Central Europe: "CET-1CEST,M3.5.0,M10.5.0/3"
 #define TZ_INFO "CET-1CEST,M3.5.0,M10.5.0/3"
 
+#define RX_PIN 14                                          // Rx pin which the MHZ19 Tx pin is attached to
+#define TX_PIN 16                                          // Tx pin which the MHZ19 Rx pin is attached to
 #define BAUDRATE 9600                                      // Device to MH-Z19 Serial baudrate (should not be changed)
 
 // InfluxDB client instance with preconfigured InfluxCloud certificate
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-// InfluxDB client instance without preconfigured InfluxCloud certificate for insecure connection 
-//InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
 
 // Data point
 Point sensor("CO2_Sensor");
 
 MHZ19 myMHZ19;
+SoftwareSerial mySerial(RX_PIN, TX_PIN); 
 
 int CO2 = 0;
 int8_t Temp = 0;
@@ -69,8 +71,8 @@ void setup() {
   // Syncing progress and the time will be printed to Serial.
   timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
 
-  Serial.begin(BAUDRATE);
-  myMHZ19.begin(Serial);
+  mySerial.begin(BAUDRATE);
+  myMHZ19.begin(mySerial);
 }
 
 void loop() {
